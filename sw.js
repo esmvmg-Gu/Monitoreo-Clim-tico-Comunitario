@@ -5,7 +5,7 @@
 
 const CACHE_NAME = 'clima-atitlan-v1';
 const APP_SHELL = [
-  './Dashboard_Observadores_Climaticos_2026.html',
+  './index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'

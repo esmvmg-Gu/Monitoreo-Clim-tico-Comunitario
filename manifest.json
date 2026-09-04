@@ -2,7 +2,7 @@
   "name": "Red de Monitoreo Climático Comunitario",
   "short_name": "Clima Atitlán",
   "description": "Datos de lluvia de la red de observadores comunitarios en la cuenca del Lago Atitlán, Sololá.",
-  "start_url": "./Dashboard_Observadores_Climaticos_2026.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
