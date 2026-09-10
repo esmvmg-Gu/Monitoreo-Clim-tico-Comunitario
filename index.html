@@ -2041,8 +2041,8 @@ const SITE_KEYS_INFO = DATA.sites_list || [];
 // Pages), ya que ahí no existe backend propio para /api/kobo-data.
 const KOBO_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRRbG1XNC1hax-nBYIGFCDlBF16f5MCVa_tInS86OOgKopSuFOCAARmsG2cePVExP_/exec';
 
-function findFieldKey(record, opts){
-  const keys = Object.keys(record);
+function findFieldKey(keysOrRecord, opts){
+  const keys = Array.isArray(keysOrRecord) ? keysOrRecord : Object.keys(keysOrRecord);
   for(const k of keys){
     const nk = norm(k);
     if(opts.avoid && opts.avoid.some(a=>nk.indexOf(a)!==-1)) continue;
@@ -2106,11 +2106,16 @@ function matchSiteByObserver(rawObserver){
 
 function buildDatasetFromRecords(records){
   if(!records.length) throw new Error('El formulario no tiene envíos todavía.');
-  const sample = records.find(r=>Object.keys(r).length>3) || records[0];
-  const dateKey = findFieldKey(sample, {must:['fecha'], any:['lectura','toma']}) || findFieldKey(sample, {must:['fecha']}) || findFieldKey(sample, {any:['starttime','_submission_time']});
-  const obsKey  = findFieldKey(sample, {any:['observador','ubicacinnombre','nombredelobservador','ubicacion']});
-  const mmKey   = findFieldKey(sample, {must:['lluvia'], any:['mm'], avoid:['plg']});
-  const convKeys = Object.keys(sample).filter(k=> norm(k).indexOf('conversion')!==-1);
+  // Se detectan los campos mirando TODOS los envíos combinados, no solo uno de
+  // muestra — si el formulario de Kobo cambió con el tiempo (ej. se agregó un
+  // campo nuevo de "pulgadas" que reemplazó al de mm), un solo registro viejo
+  // de muestra nunca vería ese campo nuevo, y se perdería la lluvia de
+  // cualquier sitio que haya migrado a reportar en pulgadas.
+  const allKeys = Array.from(new Set(records.flatMap(r=>Object.keys(r))));
+  const dateKey = findFieldKey(allKeys, {must:['fecha'], any:['lectura','toma']}) || findFieldKey(allKeys, {must:['fecha']}) || findFieldKey(allKeys, {any:['starttime','_submission_time']});
+  const obsKey  = findFieldKey(allKeys, {any:['observador','ubicacinnombre','nombredelobservador','ubicacion']});
+  const mmKey   = findFieldKey(allKeys, {must:['lluvia'], any:['mm'], avoid:['plg']});
+  const plgKey  = findFieldKey(allKeys, {must:['lluvia'], any:['plg']});
 
   if(!dateKey || !obsKey){
     throw new Error('No se encontraron los campos de fecha u observador esperados en este formulario.');
@@ -2119,6 +2124,7 @@ function buildDatasetFromRecords(records){
   const siteByKey = {};
   SITE_KEYS_INFO.forEach(s=> siteByKey[s.key]=s);
   const dailyMap = {};
+  const MM_PER_PULGADA = 25.4;
 
   records.forEach(rec=>{
     const rawDate = rec[dateKey];
@@ -2128,9 +2134,16 @@ function buildDatasetFromRecords(records){
     const fecha = d.toISOString().slice(0,10);
     const site = matchSiteByObserver(rec[obsKey]);
     if(!site) return;
+    // Prioridad: si el envío trae mm directo, se usa tal cual. Si no, y trae
+    // pulgadas, se convierte directamente aquí (pulgadas × 25.4) — así no
+    // depende de que exista o funcione bien algún campo intermedio de
+    // "conversión" que Kobo pueda renombrar, duplicar o mover de grupo.
     let mm = 0;
-    if(mmKey && rec[mmKey]!=null && rec[mmKey]!=='') mm += parseFloat(rec[mmKey])||0;
-    convKeys.forEach(ck=>{ if(rec[ck]!=null && rec[ck]!=='') mm += parseFloat(rec[ck])||0; });
+    if(mmKey && rec[mmKey]!=null && rec[mmKey]!==''){
+      mm = parseFloat(rec[mmKey])||0;
+    } else if(plgKey && rec[plgKey]!=null && rec[plgKey]!==''){
+      mm = (parseFloat(rec[plgKey])||0) * MM_PER_PULGADA;
+    }
     const dk = site.key + '|' + fecha;
     dailyMap[dk] = (dailyMap[dk]||0) + mm;
   });
