@@ -28,9 +28,19 @@ self.addEventListener('activate', (event) => {
 });
 
 // Estrategia: red primero (para tener datos frescos), y si no hay red,
-// responde con lo que haya en caché.
+// responde con lo que haya en caché — PERO nunca para los datos en vivo de
+// KoboToolbox/Apps Script. Esos siempre van directo a la red y sin caché,
+// para no arriesgarnos a mostrar lluvia vieja como si fuera actual.
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+
+  const url = event.request.url;
+  const isLiveData = url.includes('script.google.com') || url.includes('/exec');
+  if (isLiveData) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((res) => {
