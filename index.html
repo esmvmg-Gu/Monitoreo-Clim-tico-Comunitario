@@ -907,6 +907,9 @@ section{margin-top:38px;}
   font-family:'JetBrains Mono',monospace; font-size:10.5px; font-weight:600; padding:2px 6px;
   box-shadow:0 1px 4px rgba(0,0,0,.25);
 }
+@media (max-width:640px){
+  .leaflet-tooltip.rain-label{ font-size:9px; padding:1px 4px; }
+}
 .leaflet-tooltip.rain-label::before{ display:none; }
 .leaflet-tooltip.ws-tooltip{
   background:rgba(255,255,255,.96); color:var(--teal-900); border:1px solid var(--line);
@@ -1486,7 +1489,7 @@ function renderRainLegend(maxTotal){
 }
 
 function initMap(){
-  const map = L.map('map', {scrollWheelZoom:false}).setView([14.74,-91.26], 11);
+  const map = L.map('map', {scrollWheelZoom:false}).setView([14.74,-91.26], window.innerWidth < 640 ? 10 : 11);
   window.__leafletMap = map;
 
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
@@ -2023,11 +2026,19 @@ function attachRowClicks(tbody){
 }
 
 function baseChartOptions(yLabel){
+  const isMobile = window.innerWidth < 640;
   return {
     responsive:true, maintainAspectRatio:false,
     plugins:{ legend:{ display:false }, tooltip:{ backgroundColor:'#123f38', titleFont:{family:'Inter'}, bodyFont:{family:'Inter'}, padding:10, cornerRadius:6 } },
     scales:{
-      x:{ ticks:{ color:'#5c6a63', font:{size:10.5}, maxRotation:60, minRotation:0 }, grid:{ display:false } },
+      x:{
+        ticks:{
+          color:'#5c6a63', font:{size: isMobile ? 9.5 : 10.5},
+          maxRotation: isMobile ? 90 : 60, minRotation: isMobile ? 90 : 0,
+          autoSkip:true, maxTicksLimit: isMobile ? 8 : undefined
+        },
+        grid:{ display:false }
+      },
       y:{ ticks:{ color:'#5c6a63', font:{size:10.5} }, title:{ display:true, text:yLabel, color:'#5c6a63', font:{size:11} }, grid:{ color:'rgba(24,36,32,.06)' } }
     }
   };
