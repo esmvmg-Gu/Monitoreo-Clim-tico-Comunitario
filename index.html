@@ -715,7 +715,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   --paper:#ffffff;
   --ink:#182420;
   --ink-soft:#5c6a63;
-  --ink-faint:#8b978f;
+  --ink-faint:#6b756f;
   --line:#dde4e0;
   --line-soft:#e9eeec;
   --terracotta:#c1633b;
@@ -824,7 +824,7 @@ h1 em{font-style:italic; font-weight:400; color:#7fd4b8; }
 tr.anomaly-row td{ background:#fdecea !important; }
 
 /* ---------- KOBO PANEL ---------- */
-.data-source-row{ display:flex; justify-content:flex-end; margin-top:10px; }
+.data-source-row{ display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-top:10px; flex-wrap:wrap; }
 .kobo-btn{
   font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:var(--teal-800);
   background:#fff; border:1px solid var(--line); border-radius:20px; padding:6px 14px; cursor:pointer;
@@ -833,6 +833,16 @@ tr.anomaly-row td{ background:#fdecea !important; }
 .kobo-btn:hover{ border-color:var(--teal-600); background:var(--bg-2); }
 .kobo-dot{ width:7px; height:7px; border-radius:50%; background:#b6bdb9; display:inline-block; }
 .kobo-dot.live{ background:var(--good); box-shadow:0 0 0 3px rgba(47,143,111,.18); }
+.refresh-btn{
+  font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#fff;
+  background:var(--teal-900); border:1px solid var(--teal-800); border-radius:20px; padding:6px 14px 6px 12px; cursor:pointer;
+  display:inline-flex; align-items:center; gap:7px; transition:background .15s ease; min-height:32px;
+}
+.refresh-btn:hover{ background:var(--teal-700); }
+.refresh-btn:disabled{ opacity:.6; cursor:default; }
+.refresh-btn svg{ width:13px; height:13px; transition:transform .5s ease; }
+.refresh-btn.spinning svg{ animation: spin-refresh 0.9s linear infinite; }
+@keyframes spin-refresh{ to{ transform:rotate(360deg); } }
 .kobo-panel{ margin-top:12px; display:none; }
 .kobo-panel.open{ display:block; }
 .kobo-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin-bottom:14px; }
@@ -922,7 +932,7 @@ section{margin-top:38px;}
 .tabs{display:flex; gap:4px; flex-wrap:wrap; border-bottom:1px solid var(--line); margin-bottom:18px;}
 .tab-btn{
   font-family:'Inter',sans-serif; font-weight:600; font-size:13.5px; color:var(--ink-faint);
-  background:transparent; border:none; padding:11px 16px; cursor:pointer; border-radius:8px 8px 0 0;
+  background:transparent; border:none; padding:14px 16px; min-height:44px; cursor:pointer; border-radius:8px 8px 0 0;
   position:relative; top:1px; transition:color .15s ease;
 }
 .tab-btn:hover{color:var(--teal-700);}
@@ -954,7 +964,7 @@ select:focus, input:focus{ outline:none; border-color:var(--teal-600); box-shado
 .seg{ display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
 .seg button{
   font-family:'Inter',sans-serif; font-size:12px; font-weight:600; color:var(--ink-soft); background:#fff;
-  border:none; padding:7px 12px; cursor:pointer; border-right:1px solid var(--line);
+  border:none; padding:12px 16px; min-height:44px; cursor:pointer; border-right:1px solid var(--line);
 }
 .seg button:last-child{border-right:none;}
 .seg button.active{ background:var(--teal-900); color:#fff; }
@@ -965,11 +975,11 @@ select:focus, input:focus{ outline:none; border-color:var(--teal-600); box-shado
 .chart-wrap.tall{height:420px;}
 
 /* ---------- COMPARE CHECKS (acumulado) ---------- */
-.compare-list{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px;}
+.compare-list{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:14px;}
 .compare-chip{
-  font-family:'Inter',sans-serif; font-size:11.5px; font-weight:600; padding:5px 11px 5px 9px;
-  border-radius:20px; border:1.5px solid var(--line); background:#fff; color:var(--ink-soft);
-  cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all .12s ease;
+  font-family:'Inter',sans-serif; font-size:12px; font-weight:600; padding:10px 16px 10px 12px; min-height:44px;
+  border-radius:22px; border:1.5px solid var(--line); background:#fff; color:var(--ink-soft);
+  cursor:pointer; display:inline-flex; align-items:center; gap:7px; transition:all .12s ease;
 }
 .compare-chip .sw{width:9px; height:9px; border-radius:50%; display:inline-block;}
 .compare-chip.on{ color:var(--ink); border-color:currentColor; }
@@ -1055,6 +1065,10 @@ footer{
   </div>
 
   <div class="data-source-row">
+    <button class="refresh-btn" id="refresh-data-btn" title="Vuelve a traer los datos más recientes de KoboToolbox">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+      Actualizar
+    </button>
     <button class="kobo-btn" id="kobo-toggle"><span class="kobo-dot" id="kobo-dot"></span><span id="kobo-btn-label">Datos de ejemplo — Conectar KoboToolbox</span></button>
   </div>
   <div class="card kobo-panel" id="kobo-panel">
@@ -1173,7 +1187,7 @@ footer{
             <button class="btn ghost" id="diario-csv">↓ CSV</button>
           </div>
         </div>
-        <div class="chart-wrap"><canvas id="chart-diario"></canvas></div>
+        <div class="chart-wrap"><canvas id="chart-diario" role="img" aria-label="Gráfica de lluvia diaria en mm por sitio y fecha"></canvas></div>
         <div class="table-scroll">
           <table id="table-diario">
             <thead><tr>
@@ -1201,7 +1215,7 @@ footer{
             <button class="btn ghost" id="semanal-csv">↓ CSV</button>
           </div>
         </div>
-        <div class="chart-wrap"><canvas id="chart-semanal"></canvas></div>
+        <div class="chart-wrap"><canvas id="chart-semanal" role="img" aria-label="Gráfica de lluvia semanal en mm por sitio"></canvas></div>
         <div class="table-scroll">
           <table id="table-semanal">
             <thead><tr>
@@ -1231,7 +1245,7 @@ footer{
             <button class="btn ghost" id="mensual-csv">↓ CSV</button>
           </div>
         </div>
-        <div class="chart-wrap"><canvas id="chart-mensual"></canvas></div>
+        <div class="chart-wrap"><canvas id="chart-mensual" role="img" aria-label="Gráfica de lluvia mensual en mm por sitio"></canvas></div>
         <div class="table-scroll">
           <table id="table-mensual">
             <thead><tr>
@@ -1258,7 +1272,7 @@ footer{
           <p class="kobo-help" style="margin-top:0;">
             Lluvia total acumulada por sitio en el período mostrado. Mientras más larga la barra, más lluvia ha caído en ese sitio.
           </p>
-          <div class="chart-wrap tall"><canvas id="chart-acumulado-ranking"></canvas></div>
+          <div class="chart-wrap tall"><canvas id="chart-acumulado-ranking" role="img" aria-label="Ranking de lluvia total acumulada por sitio, en mm"></canvas></div>
         </div>
 
         <div id="acumulado-line-view" style="display:none;">
@@ -1270,7 +1284,7 @@ footer{
             </div>
           </div>
           <div class="compare-list" id="compare-list"></div>
-          <div class="chart-wrap tall"><canvas id="chart-acumulado"></canvas></div>
+          <div class="chart-wrap tall"><canvas id="chart-acumulado" role="img" aria-label="Evolución de la lluvia acumulada en el tiempo, por sitio"></canvas></div>
         </div>
       </div>
     </div>
@@ -1707,7 +1721,8 @@ function renderDiario(){
       data: values, backgroundColor: state.chartType.diario==='bar' ? 'rgba(39,137,117,.85)' : 'rgba(39,137,117,.12)',
       borderColor:'#278975', borderRadius:3, maxBarThickness:14, borderWidth: state.chartType.diario==='line'?2.2:0,
       pointRadius: state.chartType.diario==='line'?1.5:0, fill: state.chartType.diario==='line', tension:.2 }] },
-    options: baseChartOptions('mm')
+    options: baseChartOptions('mm'),
+    plugins: [makeValueLabelPlugin(45)]
   });
 
   const sorted = sortRows(rows, state.sort.diario);
@@ -1767,7 +1782,8 @@ function renderSemanal(){
       data: values, backgroundColor: state.chartType.semanal==='bar' ? 'rgba(61,126,166,.85)' : 'rgba(61,126,166,.12)',
       borderColor:'#3d7ea6', borderRadius:3, maxBarThickness:26, borderWidth: state.chartType.semanal==='line'?2.2:0,
       pointRadius: state.chartType.semanal==='line'?2:0, fill: state.chartType.semanal==='line', tension:.2 }] },
-    options: baseChartOptions('mm')
+    options: baseChartOptions('mm'),
+    plugins: [makeValueLabelPlugin(55)]
   });
 
   const sorted = sortRows(rows, state.sort.semanal);
@@ -1830,7 +1846,8 @@ function renderMensual(){
       data: values, backgroundColor: state.chartType.mensual==='bar' ? 'rgba(201,154,60,.88)' : 'rgba(201,154,60,.14)',
       borderColor:'#c99a3c', borderRadius:4, maxBarThickness:44, borderWidth: state.chartType.mensual==='line'?2.2:0,
       pointRadius: state.chartType.mensual==='line'?3:0, fill: state.chartType.mensual==='line', tension:.2 }] },
-    options: baseChartOptions('mm')
+    options: baseChartOptions('mm'),
+    plugins: [makeValueLabelPlugin(60)]
   });
 
   const sorted = sortRows(rows, state.sort.mensual);
@@ -2025,10 +2042,39 @@ function attachRowClicks(tbody){
   });
 }
 
+// Dibuja el valor (mm) encima de cada barra/punto. Se omite automáticamente
+// cuando hay demasiados datos a la vez (ej. "Todos los sitios" en Diario a
+// lo largo de varios meses) porque ahí las etiquetas se amontonarían unas
+// sobre otras y estorbarían más de lo que ayudan — en ese caso basta con
+// pasar el mouse (o tocar, en celular) sobre la barra para ver el valor.
+function makeValueLabelPlugin(maxPuntos){
+  return {
+    id: 'valueLabelsMm',
+    afterDatasetsDraw(chart){
+      const values = chart.data.datasets[0].data;
+      if(!values || !values.length || values.length > (maxPuntos||50)) return;
+      const meta = chart.getDatasetMeta(0);
+      const {ctx} = chart;
+      ctx.save();
+      ctx.font = "600 10px 'JetBrains Mono', monospace";
+      ctx.fillStyle = '#3a4b45';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      meta.data.forEach((el,i)=>{
+        const v = values[i];
+        if(v==null || v===0) return;
+        ctx.fillText(fmt(v), el.x, el.y - 5);
+      });
+      ctx.restore();
+    }
+  };
+}
+
 function baseChartOptions(yLabel){
   const isMobile = window.innerWidth < 640;
   return {
     responsive:true, maintainAspectRatio:false,
+    layout:{ padding:{ top:18 } }, // espacio para que la etiqueta de mm encima de cada barra no se corte
     plugins:{ legend:{ display:false }, tooltip:{ backgroundColor:'#123f38', titleFont:{family:'Inter'}, bodyFont:{family:'Inter'}, padding:10, cornerRadius:6 } },
     scales:{
       x:{
@@ -2321,6 +2367,21 @@ function initKobo(){
   toggleBtn.onclick = ()=> panel.classList.toggle('open');
   serverSel.onchange = ()=>{ serverCustomWrap.style.display = serverSel.value==='custom' ? 'block' : 'none'; };
 
+  // Botón "Actualizar": vuelve a pedir los datos más recientes de KoboToolbox
+  // sin tener que abrir el panel de conexión — útil para revisar si ya
+  // llegó el reporte de hoy sin recargar toda la página.
+  const refreshBtn = document.getElementById('refresh-data-btn');
+  refreshBtn.onclick = async ()=>{
+    refreshBtn.disabled = true;
+    refreshBtn.classList.add('spinning');
+    try{
+      await connectAppsScript(false);
+    } finally {
+      refreshBtn.disabled = false;
+      refreshBtn.classList.remove('spinning');
+    }
+  };
+
   modeSeg.querySelectorAll('button').forEach(btn=>{
     btn.onclick = ()=>{
       modeSeg.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
@@ -2451,6 +2512,25 @@ function initKobo(){
       });
     }
   } catch(e){}
+
+  // Actualización automática: mientras la página siga abierta, vuelve a
+  // pedir los datos más recientes cada 5 minutos, sin que nadie tenga que
+  // tocar "Actualizar" a mano. Se salta el refresco si la pestaña está en
+  // segundo plano (nadie la está viendo), para no gastar datos/batería sin
+  // necesidad — en cuanto la persona vuelve a esa pestaña, se reanuda, pero
+  // nunca más seguido que cada minuto (para no disparar una petición cada
+  // vez que alguien cambia de pestaña un momento y regresa).
+  const AUTO_REFRESH_MS = 5 * 60 * 1000;
+  const MIN_GAP_MS = 60 * 1000;
+  let lastAutoRefresh = Date.now();
+  function autoRefreshTick(){
+    if(document.visibilityState !== 'visible') return;
+    if(Date.now() - lastAutoRefresh < MIN_GAP_MS) return;
+    lastAutoRefresh = Date.now();
+    connectAppsScript(true);
+  }
+  setInterval(autoRefreshTick, AUTO_REFRESH_MS);
+  document.addEventListener('visibilitychange', autoRefreshTick);
 }
 
 /* ================= INIT (resilient) ================= */
