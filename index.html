@@ -1430,11 +1430,13 @@ function fillMeta(){
 }
 
 /* ================= ALERTA DE LECTURAS FUERA DE RANGO ================= */
-// Umbral en mm/día. 150mm en un solo día ya es un evento extremo incluso
-// para tormentas fuertes en la cuenca — casi siempre que aparece un valor
-// así de alto es un error de captura (total mensual metido en un solo día,
-// conversión de pulgadas mal hecha, decimal corrido, etc.) y no lluvia real.
-const MM_ANOMALY_THRESHOLD = 150;
+// Umbral en mm/día. Se subió de 150 a 500mm porque tormentas reales en la
+// cuenca (ej. Paquip 431.8mm, Pasajquim 264.2mm) superaban 150mm sin ser
+// errores de captura. 500mm en un solo día sigue siendo un valor extremo —
+// casi siempre que aparece algo así de alto es un error de captura (total
+// mensual metido en un solo día, conversión de pulgadas mal hecha, decimal
+// corrido, etc.) y no lluvia real.
+const MM_ANOMALY_THRESHOLD = 500;
 let anomalyDismissed = false;
 
 function checkAnomalies(){

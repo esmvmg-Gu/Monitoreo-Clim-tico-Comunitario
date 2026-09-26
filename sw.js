@@ -3,7 +3,7 @@
 // versión guardada — los datos en vivo de KoboToolbox seguirán necesitando
 // conexión, pero el propio dashboard sí abrirá sin problema).
 
-const CACHE_NAME = 'clima-atitlan-v1';
+const CACHE_NAME = 'clima-atitlan-v2';
 const APP_SHELL = [
   './index.html',
   './manifest.json',
@@ -41,8 +41,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Para la página misma (navegación, ej. abrir la app o su ícono desde la
+  // pantalla de inicio) se pide siempre sin caché del navegador, para que
+  // cada apertura traiga la versión más reciente publicada en GitHub Pages
+  // — nunca una copia vieja guardada localmente.
+  const fetchOptions = (event.request.mode === 'navigate') ? { cache: 'no-store' } : {};
+
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, fetchOptions)
       .then((res) => {
         const resClone = res.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, resClone));
